@@ -18,5 +18,3 @@ Production-ready automation workflows built with n8n.
 ---
 Emmanuel Abel | Automation Engineer
 ```
-
----
