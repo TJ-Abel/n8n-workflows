@@ -1,0 +1,307 @@
+{
+  "name": "2. Qualify Leads",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 5,
+              "unit": "minutes"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1RSfl9o1fCypALw03QaLf9w7Ugxev8b5vsSGR1Kwp1Lo",
+          "mode": "list",
+          "cachedResultName": "Join Our Community (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RSfl9o1fCypALw03QaLf9w7Ugxev8b5vsSGR1Kwp1Lo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2047681221,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RSfl9o1fCypALw03QaLf9w7Ugxev8b5vsSGR1Kwp1Lo/edit#gid=2047681221"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -16
+      ],
+      "id": "4bc948d9-77df-4131-aa40-580275cc5d7c",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "bPGuavVeFkcQTwz5",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=You are a lead qualification engine.\n\nYour task is to classify a lead into one of these categories:\nHOT, WARM, or COLD.\n\nStrict Rules:\n- HOT: Team size is 5+ AND Business Area is IT or Marketing\n- WARM: Team size is \"Just me\"\n- COLD: Anything else\n\nYou MUST return ONLY valid JSON.\nDo not explain.\nDo not add extra text.\n\nReturn this exact format:\n\n{\n  \"qualification\": \"HOT\",\n  \"score\": 85,\n  \"reason\": \"Short explanation\"\n}\n\nLead Data:\nBusiness Name: {{$json[\"Your Business Name\"]}}\nBusiness Area: {{$json[\"Your Business Area\"]}}\nTeam Size: {{$json[\"Team size\"]}}\n\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "textFormat": {
+            "textOptions": {
+              "type": "json_object"
+            }
+          },
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        224,
+        64
+      ],
+      "id": "197d8bad-35ec-49ac-a6d7-192b0f8fd025",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "C4XZJjxdlyGYDQf3",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.output[0].content[0].text.qualification }}",
+        "includeOtherFields": true,
+        "include": "selected",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        576,
+        80
+      ],
+      "id": "5350e116-4ade-4487-aa87-4f430acc939e",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        800,
+        -16
+      ],
+      "id": "6732824c-685d-4cc6-add3-43a76c8c7c9d",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1RSfl9o1fCypALw03QaLf9w7Ugxev8b5vsSGR1Kwp1Lo",
+          "mode": "list",
+          "cachedResultName": "Join Our Community (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RSfl9o1fCypALw03QaLf9w7Ugxev8b5vsSGR1Kwp1Lo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2047681221,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RSfl9o1fCypALw03QaLf9w7Ugxev8b5vsSGR1Kwp1Lo/edit#gid=2047681221"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Rating": "={{ $json.Rating }}",
+            "Timestamp": "={{ $json.Timestamp }}",
+            "Email Address": "={{ $json[\"Email Address\"] }}"
+          },
+          "matchingColumns": [
+            "Email Address"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Your Business Name",
+              "displayName": "Your Business Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Your Business Area",
+              "displayName": "Your Business Area",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Team size",
+              "displayName": "Team size",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Rating",
+              "displayName": "Rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1008,
+        -16
+      ],
+      "id": "c2900551-2e55-4414-ab7b-fababe9e2b62",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "tF9eXIn5nxCrwnzU",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Google Sheets Trigger": {
+      "documentId": "1RSfl9o1fCypALw03QaLf9w7Ugxev8b5vsSGR1Kwp1Lo",
+      "sheetId": 2047681221,
+      "lastIndexChecked": 3
+    }
+  },
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

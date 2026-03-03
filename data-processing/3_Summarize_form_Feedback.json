@@ -1,0 +1,306 @@
+{
+  "name": "3 Summarize form Feedback",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "10b2a41a-b421-4177-95ef-d107a523b7d3",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1f1b1KC14hbDo0YsUDKN6-0E_AeRm2nC8XQA2Ypf1TaA",
+          "mode": "list",
+          "cachedResultName": "SoC Form (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f1b1KC14hbDo0YsUDKN6-0E_AeRm2nC8XQA2Ypf1TaA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1384588239,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f1b1KC14hbDo0YsUDKN6-0E_AeRm2nC8XQA2Ypf1TaA/edit#gid=1384588239"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "9f2ee381-9b02-4516-bf93-2496542d84e0",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "tF9eXIn5nxCrwnzU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "This Workflow to summarize feedbacks/ responses  from multiple users and send as a report to the user mail"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -288,
+        -32
+      ],
+      "typeVersion": 1,
+      "id": "2b4071c4-cd09-4172-b289-4089d83b214f",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "Name"
+            },
+            {
+              "fieldToAggregate": "  Date of Birth  "
+            },
+            {
+              "fieldToAggregate": "Home Address"
+            },
+            {
+              "fieldToAggregate": "School Address"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "95a40f4e-07cf-4f70-83c7-d604d733325b",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "mode": "markdownToHtml",
+        "markdown": "={{ $json.output[0].content[0].text }}",
+        "destinationKey": "=text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        0
+      ],
+      "id": "6faed43f-3a3c-4333-85f9-ae40627299b8",
+      "name": "Markdown"
+    },
+    {
+      "parameters": {
+        "sendTo": "abelemmanuel2018@gmail.com",
+        "subject": "Summary SoC",
+        "message": "={{ $json.output[0].content[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1248,
+        0
+      ],
+      "id": "f81c9e04-5243-4fe9-8a20-ef78e68668fc",
+      "name": "Send a message",
+      "webhookId": "b0d89c6d-fa34-41ab-af0f-06a258a5857e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Ot4BwqSuz1NSzB2Z",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Your task is to summarize form responses. You will receive answers on three questions:\n1. Name\n2. Email Address\n3. Home Adress\n\nEach questions has several answers separated by | character.\nAnalyze each response and prepare a summary report. It should contain an overall sentiment.\n\nReply in Markdown formatting"
+            },
+            {
+              "content": "=1. Name: ```{{ $json.Name.join(' | ') }}```\n2. Email Address: ```{{ $json['School Address'].join(' | ') }} }}```\n3. Home Address: ```{{ $json['Home Address'].join(' | ') }}```"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "d51efd08-e108-42a2-a2d0-efc5b1d1cc70",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "C4XZJjxdlyGYDQf3",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {
+    "Aggregate": [
+      {
+        "json": {
+          "Name": [
+            "ABEL Emmanuel TiJesunimi",
+            "ALAMU BARNABAS ",
+            "ADIO FAITH OLAJUMOKE",
+            "OLADIPO Sharon ",
+            "IGE FAVOUR ",
+            "POPOOLA PRECIOUS AYOMIDE",
+            "OKEWUSI SAMUEL OLUWASEGUN",
+            "ISOLA Motunrayo Comfort"
+          ],
+          "  Date of Birth  ": [
+            "9/24/2000",
+            "6/10/2001",
+            "4/14/2002",
+            "8/4/2004",
+            "1/5/2006",
+            "10/9/2003",
+            "6/20/2004",
+            "9/19/2003"
+          ],
+          "Home Address": [
+            "Abuja",
+            "Orile-egun community, ijere, Pakuro, Mowe, Ogun State. ",
+            "20 akinbayode street papa ajao",
+            "Dominion covenant academy ",
+            "No 42, Oba Adesola Road, Akure, Ondo state",
+            "Ife city street, Ile-Ife\n",
+            "Bannky block olosun , ota",
+            "Odo-ona kekere, Ibadan"
+          ],
+          "School Address": [
+            "Okeola lane 1",
+            "OAU",
+            "oke ola line 2",
+            "Dominion covenant academy",
+            "Moremi hall presently ",
+            "Ile-Ife, Osun-State ",
+            "Adekunle fajuyi hall",
+            "Maintenance, Rock of Ages hostel"
+          ]
+        },
+        "pairedItem": [
+          {
+            "item": 0
+          },
+          {
+            "item": 1
+          },
+          {
+            "item": 2
+          },
+          {
+            "item": 3
+          },
+          {
+            "item": 4
+          },
+          {
+            "item": 5
+          },
+          {
+            "item": 6
+          },
+          {
+            "item": 7
+          }
+        ]
+      }
+    ]
+  },
+  "triggerCount": 0,
+  "meta": null
+}
