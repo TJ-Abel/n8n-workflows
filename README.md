@@ -15,6 +15,6 @@ Production-ready automation workflows built with n8n.
 
 > Credentials not included — connect your own accounts after importing.
 
----
+
 Emmanuel Abel | Automation Engineer
-```
+
