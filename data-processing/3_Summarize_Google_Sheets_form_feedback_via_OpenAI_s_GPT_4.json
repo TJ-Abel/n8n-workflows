@@ -1,0 +1,519 @@
+{
+  "name": "3 Summarize Google Sheets form feedback via OpenAI's GPT-4",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "cd80cd2f-a6e1-48eb-ba05-0f8f1a0875e5",
+      "name": "When clicking \"Test workflow\"",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        416,
+        432
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### 1. Create a Google Sheet document\n* This tutorial uses Google Sheet document connected to Google Forms, but a standalone Sheet document will work too\n* Adapt initial trigger to your needs: run manually or at some time intervals\n\n[Link to the Google Sheets template](https://docs.google.com/spreadsheets/d/1Kcr1oF_RrfNQJczmJDpwClOSYpvSnwbeX-_pdUo91-I/edit?usp=sharing)",
+        "height": 349,
+        "width": 369.1031874662338
+      },
+      "id": "9f03f1c4-c47e-4eda-bc0a-a598c21e4616",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        368,
+        240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### 2. Combine all answers into an array\n* Since the main goal is to provide an overall summary, we need to combine all answers for each Google Form question\n* Aggregate Node takes multiple incoming items and produces just a single item which contains arrays of user feedback",
+        "height": 319,
+        "width": 394
+      },
+      "id": "1e478f81-76e7-4fc3-a147-11a92d3f9998",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        768,
+        272
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### 3. Generate a summary report\n* Enter a __system message__ with a overall instructions on how to analyze the feedback form\n* Provide a __user message__ with JSON arrays.\n\n__NB! Consider splitting the form questions for a very long forms or when the number of responses is too high__",
+        "height": 319,
+        "width": 432
+      },
+      "id": "1ab06b51-3b9e-4a4c-afba-c98e529a636c",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1216,
+        272
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### 4. Convert to HTML and send an email\n* GPT is configured to reply in Markdown format. Markdown Node converts such text into HTML\n* Finally, the Gmail node sends a message with HTML report",
+        "height": 319,
+        "width": 359.1031874662346
+      },
+      "id": "ce0118a3-4eaf-4d60-adf0-5bde5d41328a",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1680,
+        272
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1f1b1KC14hbDo0YsUDKN6-0E_AeRm2nC8XQA2Ypf1TaA",
+          "mode": "list",
+          "cachedResultName": "SoC Form (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f1b1KC14hbDo0YsUDKN6-0E_AeRm2nC8XQA2Ypf1TaA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1384588239,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f1b1KC14hbDo0YsUDKN6-0E_AeRm2nC8XQA2Ypf1TaA/edit#gid=1384588239"
+        },
+        "options": {}
+      },
+      "id": "37bc8ab5-328c-4f50-bbda-f7482bf36522",
+      "name": "Get Google Sheets records",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        592,
+        432
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "tF9eXIn5nxCrwnzU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "Name"
+            },
+            {
+              "fieldToAggregate": "Email Address"
+            },
+            {
+              "fieldToAggregate": "Home Address"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d75b11b1-2cce-40c2-ab5a-d18fdf7f5283",
+      "name": "Aggregate responses into arrays",
+      "type": "n8n-nodes-base.aggregate",
+      "position": [
+        928,
+        432
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "chatModel": "gpt-4o-mini",
+        "prompt": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "Your task is to summarize form responses. You will receive answers on three questions:\n1. Name\n2. Email Address\n3. Home Adress\n\nEach questions has several answers separated by | character.\nAnalyze each response and prepare a summary report. It should contain an overall sentiment.\n\nReply in Markdown formatting"
+            },
+            {
+              "content": "=1. Name: ```{{ $json.Name.join(' | ') }}```\n2. Email Address: ```{{ $json['Email Address'].join(' | ') }}```\n3. Home Address: ```{{ $json['Home Address'].join(' | ') }}```"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.3
+        },
+        "requestOptions": {}
+      },
+      "id": "a90f83fe-809b-42db-b65d-43fb11b2979a",
+      "name": "Summarize via GPT model",
+      "type": "n8n-nodes-base.openAi",
+      "position": [
+        1360,
+        432
+      ],
+      "typeVersion": 1.1,
+      "credentials": {
+        "openAiApi": {
+          "id": "C4XZJjxdlyGYDQf3",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "markdownToHtml",
+        "markdown": "={{ $json.message.content }}",
+        "options": {
+          "completeHTMLDocument": false
+        }
+      },
+      "id": "2c8d4e46-9d3e-4655-952b-37d04f673914",
+      "name": "Convet from Markdown to HTML",
+      "type": "n8n-nodes-base.markdown",
+      "position": [
+        1712,
+        432
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "sendTo": "abelemmanuel2018@gmail.com",
+        "subject": "Feedback form response",
+        "message": "={{ $json.data }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "a27d8664-dc87-4458-9f12-970b88ab6515",
+      "name": "Send via Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        1888,
+        432
+      ],
+      "typeVersion": 2.1,
+      "webhookId": "11009edb-199f-4344-9da1-cf22ef60b1a7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Ot4BwqSuz1NSzB2Z",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Summarize via GPT model": {
+      "main": [
+        [
+          {
+            "node": "Convet from Markdown to HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Google Sheets records": {
+      "main": [
+        [
+          {
+            "node": "Aggregate responses into arrays",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convet from Markdown to HTML": {
+      "main": [
+        [
+          {
+            "node": "Send via Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking \"Test workflow\"": {
+      "main": [
+        [
+          {
+            "node": "Get Google Sheets records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate responses into arrays": {
+      "main": [
+        [
+          {
+            "node": "Summarize via GPT model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {
+    "Get Google Sheets records": [
+      {
+        "json": {
+          "row_number": 2,
+          "Timestamp": "9/19/2025 11:19:00",
+          "Email Address": "abelemmanuel2018@gmail.com",
+          "Name": "ABEL Emmanuel TiJesunimi",
+          "Email": "abelemmanuel@gmail.com",
+          "  Date of Birth  ": "9/24/2000",
+          "Phone number": "09030753658",
+          "Home Address": "Abuja",
+          "School Address": "Okeola lane 1",
+          "Comments": "good"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 3,
+          "Timestamp": "9/19/2025 11:24:43",
+          "Email Address": "barnabasalamu@gmail.com",
+          "Name": "ALAMU BARNABAS ",
+          "Email": "barnabasalamu@gmail.com",
+          "  Date of Birth  ": "6/10/2001",
+          "Phone number": 8074238002,
+          "Home Address": "Orile-egun community, ijere, Pakuro, Mowe, Ogun State. ",
+          "School Address": "OAU",
+          "Comments": ""
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 4,
+          "Timestamp": "10/3/2025 16:37:36",
+          "Email Address": "adiofaith5@gmail.com",
+          "Name": "ADIO FAITH OLAJUMOKE",
+          "Email": "adiofaith5@gmail.com",
+          "  Date of Birth  ": "4/14/2002",
+          "Phone number": "07013551109",
+          "Home Address": "20 akinbayode street papa ajao",
+          "School Address": "oke ola line 2",
+          "Comments": "n"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 5,
+          "Timestamp": "9/22/2025 15:22:30",
+          "Email Address": "sharonoladipo85@gmail.com",
+          "Name": "OLADIPO Sharon ",
+          "Email": "sharonoladipo85@gmail.com",
+          "  Date of Birth  ": "8/4/2004",
+          "Phone number": "07026497116",
+          "Home Address": "Dominion covenant academy ",
+          "School Address": "Dominion covenant academy",
+          "Comments": ""
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 6,
+          "Timestamp": "9/22/2025 17:45:35",
+          "Email Address": "igefavour25@gmail.com",
+          "Name": "IGE FAVOUR ",
+          "Email": "igefavourdeborah@gmail.com",
+          "  Date of Birth  ": "1/5/2006",
+          "Phone number": "07043406480",
+          "Home Address": "No 42, Oba Adesola Road, Akure, Ondo state",
+          "School Address": "Moremi hall presently ",
+          "Comments": ""
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 7,
+          "Timestamp": "9/22/2025 18:24:05",
+          "Email Address": "preciouspopoola05@gmail.com",
+          "Name": "POPOOLA PRECIOUS AYOMIDE",
+          "Email": "preciouspopoola05@gmail.com",
+          "  Date of Birth  ": "10/9/2003",
+          "Phone number": "08165458511",
+          "Home Address": "Ife city street, Ile-Ife\n",
+          "School Address": "Ile-Ife, Osun-State ",
+          "Comments": "I don't have any comments against, but I like the fact that you are very patient with us, and also very understanding. May God continually bless you, in all ratification, as you took it up on yourself that we should as you have grown. Thank you so much sir "
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 8,
+          "Timestamp": "9/23/2025 16:22:01",
+          "Email Address": "soluwasegun354@gmail.com",
+          "Name": "OKEWUSI SAMUEL OLUWASEGUN",
+          "Email": "soluwasegun354@gmail.com",
+          "  Date of Birth  ": "6/20/2004",
+          "Phone number": "09151423332",
+          "Home Address": "Bannky block olosun , ota",
+          "School Address": "Adekunle fajuyi hall",
+          "Comments": "I am in to part of this gathering, so help me God "
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 9,
+          "Timestamp": "9/24/2025 14:49:46",
+          "Email Address": "motunrayocomfort3@gmail.com",
+          "Name": "ISOLA Motunrayo Comfort",
+          "Email": "motunrayocomfort3@gmail.com",
+          "  Date of Birth  ": "9/19/2003",
+          "Phone number": "07051536176",
+          "Home Address": "Odo-ona kekere, Ibadan",
+          "School Address": "Maintenance, Rock of Ages hostel",
+          "Comments": "I've been blessed by the teachings and fellowship"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Aggregate responses into arrays": [
+      {
+        "json": {
+          "Name": [
+            "ABEL Emmanuel TiJesunimi",
+            "ALAMU BARNABAS ",
+            "ADIO FAITH OLAJUMOKE",
+            "OLADIPO Sharon ",
+            "IGE FAVOUR ",
+            "POPOOLA PRECIOUS AYOMIDE",
+            "OKEWUSI SAMUEL OLUWASEGUN",
+            "ISOLA Motunrayo Comfort"
+          ],
+          "Email Address": [
+            "abelemmanuel2018@gmail.com",
+            "barnabasalamu@gmail.com",
+            "adiofaith5@gmail.com",
+            "sharonoladipo85@gmail.com",
+            "igefavour25@gmail.com",
+            "preciouspopoola05@gmail.com",
+            "soluwasegun354@gmail.com",
+            "motunrayocomfort3@gmail.com"
+          ],
+          "Home Address": [
+            "Abuja",
+            "Orile-egun community, ijere, Pakuro, Mowe, Ogun State. ",
+            "20 akinbayode street papa ajao",
+            "Dominion covenant academy ",
+            "No 42, Oba Adesola Road, Akure, Ondo state",
+            "Ife city street, Ile-Ife\n",
+            "Bannky block olosun , ota",
+            "Odo-ona kekere, Ibadan"
+          ]
+        },
+        "pairedItem": [
+          {
+            "item": 0
+          },
+          {
+            "item": 1
+          },
+          {
+            "item": 2
+          },
+          {
+            "item": 3
+          },
+          {
+            "item": 4
+          },
+          {
+            "item": 5
+          },
+          {
+            "item": 6
+          },
+          {
+            "item": 7
+          }
+        ]
+      }
+    ],
+    "Summarize via GPT model": [
+      {
+        "json": {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "# Summary Report\n\n## Respondents Overview\nThe form received responses from **8 individuals**. Below are the details of each respondent:\n\n### Names:\n1. ABEL Emmanuel TiJesunimi\n2. ALAMU BARNABAS\n3. ADIO FAITH OLAJUMOKE\n4. OLADIPO Sharon\n5. IGE FAVOUR\n6. POPOOLA PRECIOUS AYOMIDE\n7. OKEWUSI SAMUEL OLUWASEGUN\n8. ISOLA Motunrayo Comfort\n\n### Email Addresses:\n1. abelemmanuel2018@gmail.com\n2. barnabasalamu@gmail.com\n3. adiofaith5@gmail.com\n4. sharonoladipo85@gmail.com\n5. igefavour25@gmail.com\n6. preciouspopoola05@gmail.com\n7. soluwasegun354@gmail.com\n8. motunrayocomfort3@gmail.com\n\n### Home Addresses:\n1. Abuja\n2. Orile-egun community, ijere, Pakuro, Mowe, Ogun State\n3. 20 Akinbayode Street, Papa Ajao\n4. Dominion Covenant Academy\n5. No 42, Oba Adesola Road, Akure, Ondo State\n6. Ife City Street, Ile-Ife\n7. Bannky Block Olosun, Ota\n8. Odo-ona Kekere, Ibadan\n\n## Sentiment Analysis\nThe overall sentiment from the responses appears to be **positive**. The variety of names and locations indicates a diverse group of respondents, which can be beneficial for community engagement or outreach programs. Each individual provided valid contact information, suggesting a willingness to participate and communicate further.\n\n### Conclusion\nThe responses indicate a strong interest and engagement from the participants. The diverse geographical representation may open avenues for collaborative efforts across different regions.",
+            "refusal": null,
+            "annotations": []
+          },
+          "logprobs": null,
+          "finish_reason": "stop"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Convet from Markdown to HTML": [
+      {
+        "json": {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "# Summary Report\n\n## Respondents Overview\nThe form received responses from **8 individuals**. Below are the details of each respondent:\n\n### Names:\n1. ABEL Emmanuel TiJesunimi\n2. ALAMU BARNABAS\n3. ADIO FAITH OLAJUMOKE\n4. OLADIPO Sharon\n5. IGE FAVOUR\n6. POPOOLA PRECIOUS AYOMIDE\n7. OKEWUSI SAMUEL OLUWASEGUN\n8. ISOLA Motunrayo Comfort\n\n### Email Addresses:\n1. abelemmanuel2018@gmail.com\n2. barnabasalamu@gmail.com\n3. adiofaith5@gmail.com\n4. sharonoladipo85@gmail.com\n5. igefavour25@gmail.com\n6. preciouspopoola05@gmail.com\n7. soluwasegun354@gmail.com\n8. motunrayocomfort3@gmail.com\n\n### Home Addresses:\n1. Abuja\n2. Orile-egun community, ijere, Pakuro, Mowe, Ogun State\n3. 20 Akinbayode Street, Papa Ajao\n4. Dominion Covenant Academy\n5. No 42, Oba Adesola Road, Akure, Ondo State\n6. Ife City Street, Ile-Ife\n7. Bannky Block Olosun, Ota\n8. Odo-ona Kekere, Ibadan\n\n## Sentiment Analysis\nThe overall sentiment from the responses appears to be **positive**. The variety of names and locations indicates a diverse group of respondents, which can be beneficial for community engagement or outreach programs. Each individual provided valid contact information, suggesting a willingness to participate and communicate further.\n\n### Conclusion\nThe responses indicate a strong interest and engagement from the participants. The diverse geographical representation may open avenues for collaborative efforts across different regions.",
+            "refusal": null,
+            "annotations": []
+          },
+          "logprobs": null,
+          "finish_reason": "stop",
+          "data": "<h1 id=\"summaryreport\">Summary Report</h1>\n<h2 id=\"respondentsoverview\">Respondents Overview</h2>\n<p>The form received responses from <strong>8 individuals</strong>. Below are the details of each respondent:</p>\n<h3 id=\"names\">Names:</h3>\n<ol>\n<li>ABEL Emmanuel TiJesunimi</li>\n<li>ALAMU BARNABAS</li>\n<li>ADIO FAITH OLAJUMOKE</li>\n<li>OLADIPO Sharon</li>\n<li>IGE FAVOUR</li>\n<li>POPOOLA PRECIOUS AYOMIDE</li>\n<li>OKEWUSI SAMUEL OLUWASEGUN</li>\n<li>ISOLA Motunrayo Comfort</li>\n</ol>\n<h3 id=\"emailaddresses\">Email Addresses:</h3>\n<ol>\n<li>abelemmanuel2018@gmail.com</li>\n<li>barnabasalamu@gmail.com</li>\n<li>adiofaith5@gmail.com</li>\n<li>sharonoladipo85@gmail.com</li>\n<li>igefavour25@gmail.com</li>\n<li>preciouspopoola05@gmail.com</li>\n<li>soluwasegun354@gmail.com</li>\n<li>motunrayocomfort3@gmail.com</li>\n</ol>\n<h3 id=\"homeaddresses\">Home Addresses:</h3>\n<ol>\n<li>Abuja</li>\n<li>Orile-egun community, ijere, Pakuro, Mowe, Ogun State</li>\n<li>20 Akinbayode Street, Papa Ajao</li>\n<li>Dominion Covenant Academy</li>\n<li>No 42, Oba Adesola Road, Akure, Ondo State</li>\n<li>Ife City Street, Ile-Ife</li>\n<li>Bannky Block Olosun, Ota</li>\n<li>Odo-ona Kekere, Ibadan</li>\n</ol>\n<h2 id=\"sentimentanalysis\">Sentiment Analysis</h2>\n<p>The overall sentiment from the responses appears to be <strong>positive</strong>. The variety of names and locations indicates a diverse group of respondents, which can be beneficial for community engagement or outreach programs. Each individual provided valid contact information, suggesting a willingness to participate and communicate further.</p>\n<h3 id=\"conclusion\">Conclusion</h3>\n<p>The responses indicate a strong interest and engagement from the participants. The diverse geographical representation may open avenues for collaborative efforts across different regions.</p>"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "triggerCount": 0,
+  "meta": {
+    "templateId": "2164",
+    "templateCredsSetupCompleted": true
+  }
+}

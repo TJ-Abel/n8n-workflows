@@ -1,0 +1,165 @@
+{
+  "name": "1 Appointment",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Request an installation",
+        "formDescription": "Fill out this form to request for an installation. we'll reach via email to finalize your appointment",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Email Address",
+              "fieldType": "email",
+              "placeholder": "yoursample@gmail.com",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Preferred install date",
+              "fieldType": "date",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cc76725d-5dcb-453d-b91d-d9b95701124f",
+      "name": "On form submission",
+      "webhookId": "5435dc4c-19bf-4c62-99a3-d431236fc838"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "30fbc3c9-d803-4836-9833-818597d0edc6",
+              "leftValue": "={{ $json['Preferred install date'].toDateTime() }}",
+              "rightValue": "={{ $now.plus(7, 'days')}}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "beforeOrEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "37c13723-be92-400b-ace5-bf7d66e109d6",
+      "name": "Is it within 7days?"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        416,
+        96
+      ],
+      "id": "fc9a702f-0dc2-44ed-b9af-5b32395a818e",
+      "name": "to do"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "value": "U0AE3SR5VEJ",
+          "mode": "list",
+          "cachedResultName": "tjabelworks"
+        },
+        "text": "=New install required (within 7days).\nContact Email: {{ $json['Email Address'] }}\nPreferred install date: {{ $json.submittedAt }}\n",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        416,
+        -96
+      ],
+      "id": "3063ee3b-3b77-46ac-9e78-4213044806b3",
+      "name": "Send a message",
+      "webhookId": "77ed7eeb-66bb-46f0-b62a-a8f6c2a9902b",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "qTkc2DHWDZ67ApxC",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Is it within 7days?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is it within 7days?": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "to do",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {
+    "On form submission": [
+      {
+        "json": {
+          "Email Address": "n234ame@gmail.com",
+          "Preferred install date": "2026-02-12",
+          "submittedAt": "2026-02-10T17:13:06.561+01:00",
+          "formMode": "test"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}
